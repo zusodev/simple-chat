@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+          integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+    <title>Hello, world!</title>
+</head>
+<body>
+<div id="app" class="container">
+    <div class="row" style="margin-top: 5rem;" v-show="!realName">
+        <div class="col-md-12 text-center">
+            <h4>Please input your name</h4>
+        </div>
+    </div>
+    <div class="row" v-show="!realName" style="margin-top: 3rem;">
+        <div class="col-md"></div>
+        <div class="col-md">
+            <form>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" v-model="preName">
+                </div>
+                <button type="button" class="btn btn-primary" @click="startChat">Submit</button>
+            </form>
+        </div>
+        <div class="col-md"></div>
+
+    </div>
+    <div class="row" v-show="realName" style="margin-top: 5rem;">
+        <div class="col-md-12 text-center">
+            {{ realName }}
+        </div>
+    </div>
+
+    <div class="msg-group center" v-show="realName">
+        <div class="card" v-for="message in messages">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{ message.name }} say：</h6>
+                <p class="card-text float-right">{{ message.content }}</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="input-group" v-show="realName">
+        <textarea id="input-box" class="form-control" rows="1" placeholder="Say something..."
+                  v-model="sendMsg"></textarea>
+        <span class="input-group-btn">
+            <button class="btn btn-secondary" type="button" @click="sendMessage">send</button>
+        </span>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            preName: '',
+            realName: '',
+            messages: [],
+            sendMsg: '',
+            ws: '',
+        },
+        methods: {
+            startChat() {
+                this.realName = this.preName;
+
+                this.ws = new WebSocket('ws://0.0.0.0:2346');
+
+                this.ws.onopen = () => {
+                    alert(`歡迎 ${this.realName} 加入聊天室！`)
+                };
+
+                this.ws.onmessage = (msg) => {
+                    this.messages.push(JSON.parse(msg.data));
+                };
+            },
+            sendMessage() {
+                console.log('sendMessage');
+                this.ws.send(JSON.stringify({
+                    name: this.realName,
+                    content: this.sendMsg,
+                }));
+            }
+        }
+    })
+</script>
+</body>
+</html>
